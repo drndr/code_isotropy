@@ -95,13 +95,31 @@ def whitening(X, method='zca'):
     print("wshape ",W.shape)
     return W, np.dot(W.T, X_centered), method
     
+def zca_features_combined(X, Y, epsilon):
+    """
+    Whitens the input matrix X using specified whitening method.
+    Inputs:
+        X:      Combined (both modality) Input data matrix with data examples along the first dimension [M x N ] for stacked whitening
+        Y:      Input data matrix (one modality) with data examples along the first dimension [M x N ]
+        epsilon: Eigenvalue regularizer
+    """
+    X_mean = np.mean(X, axis=0)
+    X_centered = X - X_mean
+    Y_mean = np.mean(Y, axis=0)
+    Y_centered = Y - Y_mean
+    Sigma = np.cov(X_centered, rowvar=False) # cov matrix
+    W = None
+    U, Lambda, _ = np.linalg.svd(Sigma) # U = eigenvectors [M x M] Lambda = eigenvalues [M x 1]
+    W = np.dot(U, np.dot(np.diag(1.0 / np.sqrt(Lambda + epsilon)), U.T))
+    print("wshape ",W.shape)
+    return np.dot(Y_centered, W.T)
+    
 def zca_features(X, epsilon):
     """
     Whitens the input matrix X using specified whitening method.
     Inputs:
         X:      Input data matrix with data examples along the first dimension [M x N ]
-        method: Whitening method. Must be one of 'zca', 'zca_cor', 'pca',
-                'pca_cor', or 'cholesky'.
+        epsilon: Eigenvalue regularizer
     """
     X_mean = np.mean(X, axis=0)
     X_centered = X - X_mean
@@ -136,13 +154,18 @@ def main():
         saved_doc_embs = np.load(f'./embeddings/doc_embs_{args.model}_{args.lang}_finetuned.npy')
     else:
         saved_doc_embs = np.load(f'./embeddings/doc_embs_{args.model}_{args.lang}.npy')
+        
+    #stacked_emb = np.vstack((saved_code_embs, saved_doc_embs)) # for combined
     
     if args.epsilon is not None:
         saved_code_embs = zca_features(saved_code_embs, args.epsilon)
         saved_doc_embs = zca_features(saved_doc_embs, args.epsilon)
+        #saved_code_embs = zca_features_combined(stacked_emb, saved_code_embs, args.epsilon)
+        #saved_doc_embs = zca_features_combined(stacked_emb, saved_doc_embs, args.epsilon)
     
     code_iso = IsoScore.IsoScore(saved_code_embs)
     doc_iso = IsoScore.IsoScore(saved_doc_embs)
+    
     all_distances = predict_distances(saved_doc_embs, saved_code_embs)
     mrr = calculate_mrr_from_distances(all_distances)
     

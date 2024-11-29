@@ -79,10 +79,10 @@ def load_data(lang):
     train_data = code_search_dataset['train']
     print("train size: ",len(train_data))
 
-    function_code = [' '.join(i).strip() for i in train_data['func_code_tokens']]
-    function_documentation = [' '.join(i).strip() for i in train_data['func_documentation_tokens']]
-    #function_code_test = train_data['func_code_string']
-    #function_documentation_test = train_data['func_documentation_string']
+    #function_code = [' '.join(i).strip() for i in train_data['func_code_tokens']]
+    #function_documentation = [' '.join(i).strip() for i in train_data['func_documentation_tokens']]
+    function_code = train_data['func_code_string']
+    function_documentation = train_data['func_documentation_string']
 
     train_df = pd.DataFrame()
     train_df['doc'] = function_documentation
@@ -91,10 +91,10 @@ def load_data(lang):
     # test_data
     test_data = code_search_dataset['test']
 
-    function_code_test = [' '.join(i).strip() for i in test_data['func_code_tokens']]
-    function_documentation_test = [' '.join(i).strip() for i in test_data['func_documentation_tokens']]
-    #function_code_test = test_data['func_code_string']
-    #function_documentation_test = test_data['func_documentation_string']
+    #function_code_test = [' '.join(i).strip() for i in test_data['func_code_tokens']]
+    #function_documentation_test = [' '.join(i).strip() for i in test_data['func_documentation_tokens']]
+    function_code_test = test_data['func_code_string']
+    function_documentation_test = test_data['func_documentation_string']
 
     test_df = pd.DataFrame()
     test_df['doc'] = function_documentation_test
